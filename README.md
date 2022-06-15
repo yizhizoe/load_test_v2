@@ -1,58 +1,19 @@
+# Test approach
+The test client will be based on AWS solution of [Distributed Load Testing](https://www.amazonaws.cn/en/solutions/distributed-load-testing/) 
+The test will be against API Gateway+Lambda or ALB+ Lambda.
+## Test resources
+The CDK in this repo is to set up
+- API Gateway REST API integrated with fast lambda function (simple hello world python lambda function)
+- API Gateway REST API integrated with slow lambda (hello world function with 1 second sleep)
+- VPC and ALB target with slow lambda function
 
-# Welcome to your CDK Python project!
-
-This is a blank project for CDK development with Python.
-
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
-
-To manually create a virtualenv on MacOS and Linux:
-
+1. In account A where the concurrency has raised,
 ```
-$ python3 -m venv .venv
+git clone https://github.com/yizhizoe/load_test_v2.git
+cd load_test_v2
+cdk bootstrap --profile <account A>
+cdk deploy --profile <account A>
 ```
+2. In account B for load test client, follow the [guide of distributed load testing solution](https://s3.cn-north-1.amazonaws.com.cn/aws-dam-prod/china/Solutions/distributed_load_testing/distributed-load-testing-platform-deployment-guide.pdf) and deploy the client. 
+3. (optional) Prewarm ALB of step 1.
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
-
-```
-$ source .venv/bin/activate
-```
-
-If you are a Windows platform, you would activate the virtualenv like this:
-
-```
-% .venv\Scripts\activate.bat
-```
-
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
-$ pip install -r requirements.txt
-```
-
-At this point you can now synthesize the CloudFormation template for this code.
-
-```
-$ cdk synth
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
-
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
