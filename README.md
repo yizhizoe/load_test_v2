@@ -38,7 +38,7 @@ To be cost efficient, the ASG will be initiated with 1 instance only to verify a
  - S3 bucket for YCSB package and shared configuration file
  - AKSK to DynamoDB table with R/W privilege
 
-## Guideline
+## User Guide
 0. As YCSB package is pretty large, it's recommended to download to local path.
 1. Deploy test resources
 ```
@@ -52,8 +52,9 @@ cdk bootstrap
 cdk deploy LoadTestDDBStack 
 ```
 2. In Systems Manager, verify that the instances in ASG are listed in 'Managed Instances'.
-3. Scale the ASG to desired number of instances by changing the 'desired capacity'.
-4. Run initial setup for ycsb testing for both ASG using Systems Manager Run Command.
+3. Update 'Provisioned capacity' of DynamoDB table. This can take some time if the desired capacity is very high.
+4. Scale the ASG to desired number of instances by changing the 'desired capacity'.
+5. Run initial setup for ycsb testing for both ASG using Systems Manager Run Command.
 
 ```
 Note: replace Access Key and Secret Key with your own AKSK. 
@@ -63,12 +64,17 @@ Important: there's a '/' after secret key.
 ```
 aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1" --targets '[{"Key":"tag:Name","Values":["group_table_1","group_table_2"]}]' --parameters '{"workingDirectory":[""],"executionTimeout":["3600"],"commands":["sudo yum install -y java-1.8.0-devel","cd /tmp/","aws s3 cp s3://cn-poc-bucket/ycsb-0.17.0.tar.gz /tmp/ --region cn-northwest-1","tar xfvz ycsb-0.17.0.tar.gz","cd ycsb-0.17.0","mkdir conf","aws s3 cp s3://cn-poc-bucket/table_1.properties /tmp/ycsb-0.17.0/conf/ --region cn-northwest-1","aws s3 cp s3://cn-poc-bucket/table_2.properties /tmp/ycsb-0.17.0/conf/ --region cn-northwest-1","touch /tmp/ycsb-0.17.0/conf/AWSCredentials.properties","echo \"accessKey = <Access key>","secretKey = <secret key>\" >> /tmp/ycsb-0.17.0/conf/AWSCredentials.properties"]}' --timeout-seconds 600 --max-concurrency "100%" --max-errors "0" --cloud-watch-output-config '{"CloudWatchOutputEnabled":true}' 
 ```
-5. After the Run Command has succeeded, load test write capacity on table_1 with load command.
+6. After the Run Command has succeeded, load test write capacity on table_1 with load command on group_table_1 clients.
 
 ```
 aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1" --targets '[{"Key":"tag:Name","Values":["group_table_1"]}]' --parameters '{"workingDirectory":[""],"executionTimeout":["3600"],"commands":["#!/bin/bash","cd /tmp/ycsb-0.17.0/","start=`date +\"%s\"`","for (( i=0; I<6; i++ ))","do"," {"," bin/ycsb load dynamodb -P workloads/workloada -P conf/table_1.properties -threads 64 -p recordcount=5000000 -load"," } &","done","wait","end=`date +\"%s\"`","echo \"time: \" `expr $end - $start`"]}' --timeout-seconds 600 --max-concurrency "100%" --max-errors "0" --cloud-watch-output-config '{"CloudWatchOutputEnabled":true}'
 ```
-6. Load test read capacity on table_1
+7. Load test read capacity on table_1 using group_table_1 clients.
 ```
 aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1" --targets '[{"Key":"tag:Name","Values":["group_table_1"]}]' --parameters '{"commands":["#!/bin/bash","cd /tmp/ycsb-0.17.0/","start=`date +\"%s\"`","for (( i=0; i<5; i++ ))","do"," {"," bin/ycsb run dynamodb -P workloads/workloadc -P conf/table_1.properties -threads 64 -p recordcount=500000 -p operationcount=3000000"," } &","done","wait","end=`date +\"%s\"`","echo \"time: \" `expr $end - $start`"],"workingDirectory":[""],"executionTimeout":["3600"]}' --timeout-seconds 600 --max-concurrency "100%" --max-errors "0" --cloud-watch-output-config '{"CloudWatchOutputEnabled":true}'
 ```
+8. You can run similar load test on table_2 in parallel using group_table_2 clients.
+
+### Monitoring
+1. The Run Command output log can be found in CloudWatch log group /aws/ssm/AWS-RunShellScript
+2. The DynamoDB table Consumed Write Capacity and Read Capacity can be found in DynamoDB table's 'Monitor' tab.
