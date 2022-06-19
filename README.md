@@ -57,12 +57,14 @@ cdk deploy LoadTestDDBStack
 5. Run initial setup for ycsb testing for both ASG using Systems Manager Run Command.
 
 ```
-Note: replace Access Key and Secret Key with your own AKSK. 
+Note: 
+1. Replace <bucket> with your own bucket name
+2. Replace Access Key and Secret Key with your own AKSK. 
 Important: there's a '/' after secret key. 
 ```
 
 ```
-aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1" --targets '[{"Key":"tag:Name","Values":["group_table_1","group_table_2"]}]' --parameters '{"workingDirectory":[""],"executionTimeout":["3600"],"commands":["sudo yum install -y java-1.8.0-devel","cd /tmp/","aws s3 cp s3://cn-poc-bucket/ycsb-0.17.0.tar.gz /tmp/ --region cn-northwest-1","tar xfvz ycsb-0.17.0.tar.gz","cd ycsb-0.17.0","mkdir conf","aws s3 cp s3://cn-poc-bucket/table_1.properties /tmp/ycsb-0.17.0/conf/ --region cn-northwest-1","aws s3 cp s3://cn-poc-bucket/table_2.properties /tmp/ycsb-0.17.0/conf/ --region cn-northwest-1","touch /tmp/ycsb-0.17.0/conf/AWSCredentials.properties","echo \"accessKey = <Access key>","secretKey = <secret key>\" >> /tmp/ycsb-0.17.0/conf/AWSCredentials.properties"]}' --timeout-seconds 600 --max-concurrency "100%" --max-errors "0" --cloud-watch-output-config '{"CloudWatchOutputEnabled":true}' 
+aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1" --targets '[{"Key":"tag:Name","Values":["group_table_1","group_table_2"]}]' --parameters '{"workingDirectory":[""],"executionTimeout":["3600"],"commands":["sudo yum install -y java-1.8.0-devel","cd /tmp/","aws s3 cp s3://<bucket>/ycsb-0.17.0.tar.gz /tmp/ --region cn-northwest-1","tar xfvz ycsb-0.17.0.tar.gz","cd ycsb-0.17.0","mkdir conf","aws s3 cp s3://<bucket>/table_1.properties /tmp/ycsb-0.17.0/conf/ --region cn-northwest-1","aws s3 cp s3://<bucket>/table_2.properties /tmp/ycsb-0.17.0/conf/ --region cn-northwest-1","touch /tmp/ycsb-0.17.0/conf/AWSCredentials.properties","echo \"accessKey = <Access key>","secretKey = <secret key>\" >> /tmp/ycsb-0.17.0/conf/AWSCredentials.properties"]}' --timeout-seconds 600 --max-concurrency "100%" --max-errors "0" --cloud-watch-output-config '{"CloudWatchOutputEnabled":true}' 
 ```
 6. After the Run Command has succeeded, load test write capacity on table_1 with load command on group_table_1 clients.
 
