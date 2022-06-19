@@ -3,7 +3,7 @@ import os
 
 import aws_cdk as cdk
 
-from load_test_v2.load_test_v2_stack import LoadTestV2Stack
+from load_test_v2.load_test_v2_stack import LoadTestV2Stack, LoadTestDDBStack
 
 
 app = cdk.App()
@@ -24,5 +24,6 @@ LoadTestV2Stack(app, "LoadTestV2Stack",
 
     # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
     )
+LoadTestDDBStack(app, "LoadTestDDBStack")
 
 app.synth()
