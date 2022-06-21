@@ -62,6 +62,7 @@ echo "accessKey = <accessKey>
 secretKey = <secretKey>" >> /tmp/ycsb-0.17.0/conf/AWSCredentials.properties
 ```
 3. Upload the package and deploy the CDK stack
+```
 aws s3 cp <download path>/ycsb-0.17.0.tar.gz s3://<s3_bucket>/ 
 aws s3 cp conf/table_1.properties s3://<s3_bucket>/ 
 aws s3 cp conf/table_2.properties s3://<s3_bucket>/ 
