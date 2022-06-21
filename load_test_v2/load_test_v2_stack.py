@@ -126,6 +126,9 @@ class LoadTestDDBStack(Stack):
             cpu_type=ec2.AmazonLinuxCpuType.ARM_64
         )
 
+        with open("./user_data/install_ycsb.sh") as f:
+            user_data = f.read()
+
         # Instance Role and SSM Managed Policy
         role = iam.Role(self, "InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
 
@@ -140,6 +143,7 @@ class LoadTestDDBStack(Stack):
                                                 instance_type=ec2.InstanceType(instance_type_identifier="c6g.4xlarge"),
                                                 machine_image=amzn_linux,
                                                 desired_capacity=1,
+                                             user_data=ec2.UserData.custom(user_data),
                                                 min_capacity=0,
                                                 max_capacity=40,
                                                 role=role
@@ -152,6 +156,7 @@ class LoadTestDDBStack(Stack):
                                                 instance_type=ec2.InstanceType(instance_type_identifier="c6g.4xlarge"),
                                                 machine_image=amzn_linux,
                                                 desired_capacity=1,
+                                             user_data=ec2.UserData.custom(user_data),
                                                 min_capacity=0,
                                                 max_capacity=40,
                                                 role=role
