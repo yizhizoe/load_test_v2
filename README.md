@@ -79,7 +79,7 @@ aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1"
 ```
 8. Load test read capacity on table_1 using group_table_1 clients.
 ```
-aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1" --targets '[{"Key":"tag:Name","Values":["group_table_1"]}]' --parameters '{"commands":["#!/bin/bash","cd /tmp/ycsb-0.17.0/","start=`date +\"%s\"`","for (( i=0; i<5; i++ ))","do"," {"," bin/ycsb run dynamodb -P workloads/workloadc -P conf/table_1.properties -threads 64 -p recordcount=2000000 -p operationcount=3000000"," } &","done","wait","end=`date +\"%s\"`","echo \"time: \" `expr $end - $start`"],"workingDirectory":[""],"executionTimeout":["3600"]}' --timeout-seconds 1800 --max-concurrency "100%" --max-errors "0" --cloud-watch-output-config '{"CloudWatchOutputEnabled":true}'
+aws ssm send-command --document-name "AWS-RunShellScript" --document-version "1" --targets '[{"Key":"tag:Name","Values":["group_table_1"]}]' --parameters '{"commands":["#!/bin/bash","cd /tmp/ycsb-0.17.0/","start=`date +\"%s\"`","for (( i=0; i<5; i++ ))","do"," {"," bin/ycsb run dynamodb -P workloads/workloadc -P conf/table_1.properties -threads 64 -p recordcount=2000000 -p operationcount=3000000 -p requestdistribution=uniform"," } &","done","wait","end=`date +\"%s\"`","echo \"time: \" `expr $end - $start`"],"workingDirectory":[""],"executionTimeout":["3600"]}' --timeout-seconds 1800 --max-concurrency "100%" --max-errors "0" --cloud-watch-output-config '{"CloudWatchOutputEnabled":true}'
 ```
 9. You can run similar load test on table_2 in parallel using group_table_2 clients.
 
